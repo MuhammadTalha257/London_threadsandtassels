@@ -10,7 +10,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#111110">
+    <meta name="theme-color" content="#5c0e1c">
+    <link rel="icon" type="image/png" href="{{ asset('images/brand/logo-mark.png') }}">
     <meta name="description" content="{{ $seoDescription }}">
     <meta name="keywords" content="{{ $seoKeywords }}">
     <meta name="robots" content="index, follow">
@@ -70,52 +71,37 @@
     @php($navCategories = \App\Models\Category::active()->get())
 
     <div id="page-loader" aria-hidden="true">
-        <div class="page-loader__top">
-            <div class="page-loader__mark">
-                <span class="page-loader__mark-eyebrow">LONDON</span>
-                <span class="page-loader__mark-name">Threads &amp; Tassels</span>
+        <span class="page-loader__curtain page-loader__curtain--left"></span>
+        <span class="page-loader__curtain page-loader__curtain--right"></span>
+        <div class="page-loader__stage">
+            <div class="page-loader__mandala">
+                <svg class="page-loader__ring page-loader__ring--outer" viewBox="0 0 400 400">
+                    <circle cx="200" cy="200" r="190" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="2 9" stroke-linecap="round"/>
+                    @for($petal = 0; $petal < 24; $petal++)
+                        <path d="M200 22 C206 34 206 44 200 54 C194 44 194 34 200 22Z" fill="currentColor" opacity=".55" transform="rotate({{ $petal * 15 }} 200 200)"/>
+                    @endfor
+                </svg>
+                <svg class="page-loader__ring page-loader__ring--inner" viewBox="0 0 400 400">
+                    <circle cx="200" cy="200" r="150" fill="none" stroke="currentColor" stroke-width=".8" opacity=".6"/>
+                    @for($dot = 0; $dot < 48; $dot++)
+                        <circle cx="200" cy="58" r="{{ $dot % 2 ? 1.6 : 3 }}" fill="currentColor" transform="rotate({{ $dot * 7.5 }} 200 200)"/>
+                    @endfor
+                </svg>
+                <svg class="page-loader__progress" viewBox="0 0 400 400">
+                    <circle cx="200" cy="200" r="170" fill="none" stroke="rgba(239,208,142,.18)" stroke-width="2"/>
+                    <circle id="loader-arc" cx="200" cy="200" r="170" fill="none" stroke="url(#loader-gold)" stroke-width="2.5" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" transform="rotate(-90 200 200)"/>
+                    <defs><linearGradient id="loader-gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3cf"/><stop offset=".5" stop-color="#efd08e"/><stop offset="1" stop-color="#c68f2f"/></linearGradient></defs>
+                </svg>
+                <div class="page-loader__logo-wrap">
+                    <img src="{{ asset('images/brand/logo-light.png') }}" alt="" class="page-loader__logo page-loader__logo--ghost">
+                    <span class="page-loader__logo-fill" style="--logo-mask: url('{{ asset('images/brand/logo-light.png') }}')"><img src="{{ asset('images/brand/logo-light.png') }}" alt="London Threads & Tassels" class="page-loader__logo"></span>
+                </div>
             </div>
-            <img src="{{ asset('images/london-threads-tassels-logo.jpg') }}" alt="" class="h-10 w-10 rounded-full object-cover opacity-80 md:h-12 md:w-12">
-        </div>
-        <div class="page-loader__center">
-            <div class="page-loader__ring">
-                <img src="{{ asset('images/london-threads-tassels-logo.jpg') }}" alt="London Threads & Tassels" class="page-loader__logo">
-                <span class="page-loader__label">Loading</span>
-            </div>
-        </div>
-        <div class="page-loader__bottom">
-            <span class="page-loader__count" id="loader-count">0%</span>
-            <span class="page-loader__track"><span class="page-loader__fill" id="loader-fill"></span></span>
+            <p class="page-loader__tagline">Hand-embroidered in London</p>
+            <p class="page-loader__count"><span id="loader-count">0%</span></p>
+            <span class="page-loader__fill" id="loader-fill" hidden></span>
         </div>
     </div>
-
-    @if($promotion)
-        <div id="offer-popup" class="offer-popup" role="dialog" aria-modal="true" aria-labelledby="offer-popup-title">
-            <div class="offer-banner">
-                <div class="offer-banner__media">
-                    @if($promotion->photo)
-                        <img src="{{ $promotion->photo }}" alt="{{ $promotion->title }}">
-                    @else
-                        <div class="offer-banner__media-fallback" aria-hidden="true"></div>
-                    @endif
-                    <div class="offer-banner__veil" aria-hidden="true"></div>
-                    <div class="offer-banner__veil--mobile" aria-hidden="true"></div>
-                </div>
-                <button type="button" id="offer-popup-close" class="offer-banner__close" aria-label="Close offer">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-4 w-4"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
-                </button>
-                <div class="offer-banner__body">
-                    <p class="offer-banner__eyebrow">{{ $promotion->title }}</p>
-                    <h2 id="offer-popup-title" class="offer-banner__title">An offer, <em>just landed</em></h2>
-                    <p class="offer-banner__message">{{ $promotion->message }}</p>
-                    @if($promotion->cta_label)
-                        <a href="{{ $promotion->cta_url ?: '#collection' }}" id="offer-popup-cta" class="offer-banner__cta">{{ $promotion->cta_label }}</a>
-                    @endif
-                    <span class="offer-banner__fine">No code needed &middot; Applied automatically at checkout</span>
-                </div>
-            </div>
-        </div>
-    @endif
 
     <div id="route-veil" aria-hidden="true"><span id="route-veil__mark">LONDON THREADS &amp; TASSELS</span></div>
 
@@ -126,9 +112,43 @@
     </a>
 
     <div id="site-topbar" class="site-topbar">
-        <div class="bg-ink px-4 py-2 text-center text-[9px] uppercase tracking-[.17em] text-white/80">
-            Complimentary UK delivery on every order &middot; Handcrafted in small batches
-        </div>
+        @if($promotion)
+            @php($ribbonTag = $promotion->cta_url ? 'a' : 'div')
+            <{{ $ribbonTag }} @if($promotion->cta_url) href="{{ $promotion->cta_url }}" @endif class="festive-ribbon" data-festive aria-label="{{ $promotion->title }}{{ $promotion->discount_label ? ': '.$promotion->discount_label : '' }}">
+                <div class="festive-ribbon__inner">
+                    @if($promotion->photo)
+                        <img src="{{ $promotion->photo }}" alt="" class="festive-ribbon__thumb">
+                    @endif
+                    <span class="festive-ribbon__diya" aria-hidden="true">
+                        <svg viewBox="0 0 32 32" fill="none"><path class="festive-ribbon__flame" d="M16 3c2.6 3.4 3.6 6 3 8.2-.5 1.9-1.8 3-3 3s-2.6-1.1-3-3c-.6-2.2.4-4.8 3-8.2Z" fill="#ffd27a"/><path d="M3 18h26c-.8 5.6-6.3 9-13 9S3.8 23.6 3 18Z" fill="currentColor"/><path d="M8 18c1.6 2 4.5 3 8 3s6.4-1 8-3" stroke="#3a0711" stroke-width="1.2" stroke-linecap="round"/></svg>
+                    </span>
+                    <p class="festive-ribbon__text">
+                        <span class="festive-ribbon__event">{{ $promotion->title }}</span>
+                        @if($promotion->discount_label)
+                            <span class="festive-ribbon__deal">{{ $promotion->discount_label }}</span>
+                        @endif
+                        <span class="festive-ribbon__msg">{{ $promotion->message }}</span>
+                    </p>
+                    @if($promotion->ends_at)
+                        <span class="festive-ribbon__timer" data-countdown="{{ $promotion->ends_at->toIso8601String() }}" aria-label="Offer ends {{ $promotion->ends_at->format('j F, H:i') }}">
+                            <span class="festive-ribbon__unit"><b data-cd="d">00</b><i>days</i></span>
+                            <span class="festive-ribbon__unit"><b data-cd="h">00</b><i>hrs</i></span>
+                            <span class="festive-ribbon__unit"><b data-cd="m">00</b><i>min</i></span>
+                            <span class="festive-ribbon__unit"><b data-cd="s">00</b><i>sec</i></span>
+                        </span>
+                    @endif
+                    @if($promotion->cta_url)
+                        <span class="festive-ribbon__cta">{{ $promotion->cta_label ?: 'Shop the offer' }}</span>
+                    @endif
+                </div>
+                @foreach([[8, 30, 0], [22, 70, 1.2], [41, 20, 2.1], [63, 65, 0.6], [79, 35, 2.8], [92, 60, 1.7]] as [$sparkX, $sparkY, $sparkDelay])
+                    <span class="festive-ribbon__spark" aria-hidden="true" style="left: {{ $sparkX }}%; top: {{ $sparkY }}%; animation-delay: {{ $sparkDelay }}s"></span>
+                @endforeach
+                <span class="festive-ribbon__toran" aria-hidden="true"></span>
+            </{{ $ribbonTag }}>
+        @else
+            <div class="quiet-ribbon">Free UK delivery on every order &middot; Hand-embroidered in small batches</div>
+        @endif
 
         <header id="site-header" class="site-header {{ $transparent ? 'site-header--transparent' : 'site-header--solid' }}">
             <div class="site-header__inner">
@@ -156,9 +176,8 @@
                 </div>
 
                 <a href="{{ route('store.index') }}" class="site-header__logo" aria-label="London Threads & Tassels — home">
-                    <span class="site-header__eyebrow">LONDON</span>
-                    <span class="site-header__name">Threads &amp; Tassels</span>
-                    <span class="site-header__rule"></span>
+                    <img src="{{ asset('images/brand/logo-light.png') }}" alt="London Threads & Tassels" class="site-header__logo-light" width="1054" height="580">
+                    <img src="{{ asset('images/brand/logo-maroon.png') }}" alt="" aria-hidden="true" class="site-header__logo-dark" width="1054" height="580">
                 </a>
 
                 <div class="flex items-center justify-end gap-4 md:gap-5">
@@ -232,7 +251,7 @@
     <footer data-motion class="site-footer">
         <div class="mx-auto grid max-w-[1440px] gap-10 px-5 md:grid-cols-3 md:px-10">
             <div>
-                <p class="display text-xl">LONDON THREADS<br>&amp; TASSELS</p>
+                <img src="{{ asset('images/brand/logo-maroon.png') }}" alt="London Threads & Tassels" class="h-20 w-auto" loading="lazy">
                 <p class="mt-4 max-w-xs text-xs leading-6 text-graphite-warm">Celebrating the craft of occasion dressing, one considered suit at a time — designed by Akansha.</p>
                 <div class="mt-6 flex gap-3">
                     <a href="#" target="_blank" rel="noopener" class="social-icon" aria-label="Instagram">

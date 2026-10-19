@@ -1,45 +1,32 @@
 @props(['product'])
-<a
-    href="{{ route('products.show', $product) }}"
-    class="product-card group"
-    data-motion
-    data-cursor-view
-    @if(count($product->gallery_urls) > 1) data-gallery='@json($product->gallery_urls)' @endif
->
-    <div class="product-card__image-wrap glow" data-glow>
+@php($hoverImage = $product->gallery_urls[1] ?? null)
+<a href="{{ route('products.show', $product) }}" class="product-card group" data-motion data-cursor-view>
+    <div class="product-card__image-wrap">
         @if($product->isSoldOut())
-            <span class="badge badge--sold">Sold Out</span>
+            <span class="badge badge--sold">Sold out</span>
         @elseif($product->isOnSale())
-            <span class="badge badge--sale">Sale &minus;{{ $product->discount_percent }}%</span>
+            <span class="badge badge--sale">{{ $product->discount_percent }}% off</span>
         @elseif($product->is_new_arrival)
-            <span class="badge badge--new">New In</span>
+            <span class="badge badge--new">New in</span>
         @endif
         <img src="{{ $product->photo }}" class="product-card__image" alt="{{ $product->name }}" loading="lazy">
-        <div class="card-chip">
-            <span class="card-chip__name">{{ $product->name }}</span>
-            <span class="card-chip__value">£{{ number_format($product->effective_price, 0) }}</span>
-        </div>
+        @if($hoverImage)
+            <img src="{{ $hoverImage }}" class="product-card__image product-card__image--hover" alt="" aria-hidden="true" loading="lazy">
+        @endif
     </div>
-    <div class="product-card__details mt-3 flex items-start justify-between gap-3">
-        <div>
-            <p class="mono-label">{{ $product->name }}</p>
-            <div class="mt-1 flex items-center gap-2">
-                @foreach(array_slice($product->color_options, 0, 4) as $opt)
-                    <span class="swatch-dot" style="background:{{ $opt['hex'] }}" title="{{ $opt['name'] }}"></span>
-                @endforeach
-                <span class="text-xs text-ink/55">{{ count($product->color_options) > 1 ? count($product->color_options).' colours' : $product->color }}</span>
-            </div>
-            @if(!$product->isSoldOut() && $product->stock <= 3)
-                <p class="mt-1 text-[10px] uppercase tracking-wide text-signal-orange">Only {{ $product->stock }} left</p>
-            @endif
-        </div>
-        <p class="whitespace-nowrap text-xs">
+    <div class="product-card__details">
+        <p class="product-card__name">{{ $product->name }}</p>
+        <p class="product-card__brand">{{ $product->category?->name ?? 'Hand-embroidered' }}</p>
+        <p class="product-card__price">
             @if($product->isOnSale())
-                <span class="text-ink/40 line-through">£{{ number_format($product->price, 2) }}</span>
-                <span class="ml-1 font-semibold text-signal-orange">£{{ number_format($product->effective_price, 2) }}</span>
+                <span class="product-card__was">&pound;{{ number_format((float) $product->price, 2) }}</span>
+                <span class="product-card__now">&pound;{{ number_format((float) $product->effective_price, 2) }}</span>
             @else
-                £{{ number_format($product->price, 2) }}
+                &pound;{{ number_format((float) $product->price, 2) }}
             @endif
         </p>
+        @if(!$product->isSoldOut() && $product->stock <= 3)
+            <p class="product-card__low">Only {{ $product->stock }} left</p>
+        @endif
     </div>
 </a>

@@ -1,0 +1,28 @@
+[package]
+name = "muhammadtalha257/london-threadsandtassels"
+version = "0.1.0"
+description = "London Threads & Tassels Laravel storefront"
+
+[dependencies]
+"php/php" = "=8.3.4"
+
+[fs]
+"/app/app" = "app"
+"/app/bootstrap" = "bootstrap"
+"/app/config" = "config"
+"/app/database" = "database"
+"/app/public" = "public"
+"/app/resources" = "resources"
+"/app/routes" = "routes"
+"/app/storage" = "storage"
+"/app/vendor" = "vendor"
+"/app/artisan" = "artisan"
+"/app/composer.json" = "composer.json"
+"/app/composer.lock" = "composer.lock"
+
+[[command]]
+name = "run"
+module = "php/php:php"
+runner = "wasi"
+[command.annotations.wasi]
+main-args = ["-S", "0.0.0.0:8080", "-t", "/app/public", "/app/public/index.php"]

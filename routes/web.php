@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\CampaignController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\HeroSlideController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AuthController;
@@ -64,6 +65,8 @@ Route::middleware('auth')->group(function (): void {
 });
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function (): void {
     Route::get('/', [AdminController::class, 'index'])->name('index');
+    Route::post('/maintenance/on', [AdminController::class, 'maintenanceOn'])->name('maintenance.on');
+    Route::post('/maintenance/off', [AdminController::class, 'maintenanceOff'])->name('maintenance.off');
     Route::resource('products', AdminProductController::class);
     Route::get('/orders', [OrderController::class, 'index'])->name('orders');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
@@ -73,4 +76,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::resource('promotions', PromotionController::class)->except('show');
     Route::resource('campaigns', CampaignController::class)->except('show');
     Route::resource('categories', CategoryController::class)->except('show');
+    Route::resource('hero-slides', HeroSlideController::class)->except('show');
+    Route::patch('/hero-slides/{heroSlide}/detach-product', [HeroSlideController::class, 'detachProduct'])->name('hero-slides.detach-product');
 });
