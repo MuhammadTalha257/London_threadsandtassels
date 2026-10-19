@@ -1,14 +1,13 @@
 # Deploys the site to InfinityFree (lttethnic.com) over FTP every time
 # something is pushed or merged into `main`.
 #
-# The live site uses a split layout:
-#   /laravel_core/  the Laravel app (code, vendor, .env, storage)
-#   /htdocs/        the public web root (index.php, build/, images/, storage/)
-# htdocs/index.php is a custom file that points at ../laravel_core, so it is
-# never overwritten.
+# On InfinityFree each domain has its own folder: /lttethnic.com/htdocs/.
+# The whole Laravel project lives there; the .htaccess in that folder
+# (already on the server, not in this repo) sends visitors to /public and
+# blocks access to the code folders.
 #
 # Only changed files are uploaded. The live database, .env, vendor/,
-# storage/ and uploaded photos are never touched.
+# storage/ and uploaded photos (public/storage) are never touched.
 #
 # Secrets (repo → Settings → Secrets and variables → Actions):
 #   FTP_SERVER, FTP_USERNAME, FTP_PASSWORD
@@ -42,7 +41,7 @@ jobs:
           npm ci
           npm run build
 
-      - name: Upload app code to /laravel_core
+      - name: Upload changed files to lttethnic.com
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -50,15 +49,19 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftp
           port: 21
-          server-dir: /laravel_core/
+          server-dir: /lttethnic.com/htdocs/
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
             .github/**
-            public/**
             vendor/**
             storage/**
+            public/storage/**
+            public/hot
+            public/index.php
+            public/.htaccess
+            .htaccess
             .env
             .env.*
             database/database.sqlite
@@ -86,20 +89,3 @@ jobs:
             .phpunit.result.cache
             reel_*
             start_server.command
-
-      - name: Upload public files to /htdocs
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
-          port: 21
-          local-dir: ./public/
-          server-dir: /htdocs/
-          exclude: |
-            index.php
-            .htaccess
-            storage/**
-            hot
-            hot.*
