@@ -1,0 +1,85 @@
+# Deploys the site to InfinityFree (lttethnic.com) over FTP every time
+# something is pushed or merged into `main`.
+#
+# It only uploads files that changed since the last deploy. It never
+# touches the live database, .env, vendor/ or uploaded photos.
+#
+# One-time setup — GitHub repo → Settings → Secrets and variables → Actions:
+#   FTP_SERVER    e.g. ftpupload.net
+#   FTP_USERNAME  e.g. if0_42982338
+#   FTP_PASSWORD  your InfinityFree account (FTP) password
+
+name: Deploy to InfinityFree
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # also allows "Run workflow" by hand from the Actions tab
+
+concurrency:
+  group: deploy-live
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Build CSS and JS (public/build)
+        run: |
+          npm ci
+          npm run build
+
+      - name: Upload changed files to InfinityFree
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftp
+          port: 21
+          server-dir: /htdocs/
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            .github/**
+            vendor/**
+            storage/**
+            public/storage/**
+            public/hot
+            .env
+            .env.*
+            database/database.sqlite
+            database/*.stale
+            tests/**
+            deploy_v2/**
+            deploy_infinityfree/**
+            upload_to_infinityfree/**
+            Claude outputs/**
+            .claude/**
+            .agents/**
+            .codex/**
+            *.zip
+            *.md
+            app.yaml
+            wasmer.toml
+            phpunit.xml
+            package.json
+            package-lock.json
+            vite.config.js
+            .mcp.json
+            boost.json
+            .editorconfig
+            .npmrc
+            .phpunit.result.cache
+            reel_*
+            start_server.command
