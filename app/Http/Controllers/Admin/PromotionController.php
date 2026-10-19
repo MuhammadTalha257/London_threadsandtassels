@@ -25,7 +25,7 @@ class PromotionController extends Controller
     {
         Promotion::create($this->validated($request));
 
-        return redirect()->route('admin.promotions.index')->with('success', 'Banner saved.');
+        return redirect()->route('admin.promotions.index')->with('success', 'Festival offer saved.');
     }
 
     public function edit(Promotion $promotion): View
@@ -37,7 +37,7 @@ class PromotionController extends Controller
     {
         $promotion->update($this->validated($request, $promotion));
 
-        return redirect()->route('admin.promotions.index')->with('success', 'Banner updated.');
+        return redirect()->route('admin.promotions.index')->with('success', 'Festival offer updated.');
     }
 
     public function destroy(Promotion $promotion): RedirectResponse
@@ -47,7 +47,7 @@ class PromotionController extends Controller
         }
         $promotion->delete();
 
-        return back()->with('success', 'Banner removed.');
+        return back()->with('success', 'Festival offer removed.');
     }
 
     private function validated(Request $request, ?Promotion $promotion = null): array
@@ -55,6 +55,8 @@ class PromotionController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:60'],
             'message' => ['required', 'string', 'max:160'],
+            'discount_label' => ['nullable', 'string', 'max:40'],
+            'ends_at' => ['nullable', 'date'],
             'cta_label' => ['nullable', 'string', 'max:40'],
             'cta_url' => ['nullable', 'string', 'max:255'],
             'image' => ['nullable', 'image', 'max:6144'],

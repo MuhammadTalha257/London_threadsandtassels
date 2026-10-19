@@ -8,11 +8,11 @@ use Illuminate\Support\Facades\Storage;
 
 class Promotion extends Model
 {
-    protected $fillable = ['title', 'message', 'cta_label', 'cta_url', 'image_path', 'image_url', 'is_active'];
+    protected $fillable = ['title', 'message', 'discount_label', 'ends_at', 'cta_label', 'cta_url', 'image_path', 'image_url', 'is_active'];
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean'];
+        return ['is_active' => 'boolean', 'ends_at' => 'datetime'];
     }
 
     /**
@@ -34,13 +34,23 @@ class Promotion extends Model
         });
     }
 
+    /**
+     * The live festival / event offer shown in the header ribbon.
+     * An offer whose end date has passed switches itself off.
+     */
     public static function current(): ?self
     {
         try {
-            return static::where('is_active', true)->latest()->first();
+            $promotion = static::where('is_active', true)->latest()->first();
         } catch (\Throwable $e) {
             // Table not migrated yet — fail soft so the storefront still renders.
             return null;
         }
+
+        if ($promotion?->ends_at?->isPast()) {
+            return null;
+        }
+
+        return $promotion;
     }
 }

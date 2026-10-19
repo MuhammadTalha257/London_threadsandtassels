@@ -1,5 +1,5 @@
 import * as Motion from 'motion';
-import { createMorphSlider } from './morph-slider';
+import { initMela, initCountdowns } from './mela';
 
 const animate = Motion.animate;
 const inView = Motion.inView;
@@ -36,62 +36,37 @@ const onTeardown = (fn) => teardown.push(fn);
     const loader = document.getElementById('page-loader');
     if (!loader) return;
     const countEl = document.getElementById('loader-count');
-    const fillEl = document.getElementById('loader-fill');
+    const arc = document.getElementById('loader-arc');
     let pct = 0;
     let done = false;
 
+    const paint = (value) => {
+        if (countEl) countEl.textContent = `${Math.round(value)}%`;
+        loader.style.setProperty('--load', (value / 100).toFixed(3));
+        if (arc) arc.style.strokeDashoffset = String(100 - value);
+    };
     const finish = () => {
         if (done) return;
         done = true;
-        if (countEl) countEl.textContent = '100%';
-        if (fillEl) fillEl.style.width = '100%';
+        paint(100);
+        // let the logo sit fully gold for a beat, then part the curtains
         setTimeout(() => {
             loader.classList.add('is-done');
-            setTimeout(() => loader.remove(), 900);
-        }, 300);
+            setTimeout(() => loader.remove(), 1200);
+        }, 450);
     };
     if (reducedMotion) { loader.remove(); return; }
 
     const tick = setInterval(() => {
-        pct = Math.min(96, pct + Math.random() * 13 + 4);
-        if (countEl) countEl.textContent = `${Math.round(pct)}%`;
-        if (fillEl) fillEl.style.width = `${pct}%`;
+        pct = Math.min(94, pct + Math.random() * 11 + 3);
+        paint(pct);
     }, 140);
     const stop = () => { clearInterval(tick); finish(); };
     window.addEventListener('load', () => setTimeout(stop, 350));
-    setTimeout(stop, 4000);
+    setTimeout(stop, 4500);
 })();
 
-/* ================================================================== */
-/* Offer popup: the promotion, shown as a dismissible modal on open    */
-/* ================================================================== */
-(function offerPopup() {
-    const popup = document.getElementById('offer-popup');
-    if (!popup) return;
-    const closeBtn = document.getElementById('offer-popup-close');
-    const cta = document.getElementById('offer-popup-cta');
-    const KEY = 'ltt_offer_dismissed';
-
-    const open = () => {
-        if (sessionStorage.getItem(KEY)) return;
-        popup.classList.add('is-open');
-        document.body.style.overflow = 'hidden';
-    };
-    const close = () => {
-        popup.classList.remove('is-open');
-        document.body.style.overflow = '';
-        try { sessionStorage.setItem(KEY, '1'); } catch (e) { /* private mode */ }
-    };
-
-    closeBtn?.addEventListener('click', close);
-    cta?.addEventListener('click', close);
-    popup.addEventListener('click', (event) => { if (event.target === popup) close(); });
-    document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && popup.classList.contains('is-open')) close(); });
-
-    const start = Date.now();
-    window.addEventListener('load', () => setTimeout(open, Math.max(600, 1400 - (Date.now() - start))));
-    setTimeout(open, 3200);
-})();
+initCountdowns();
 
 (function topbar() {
     const bar = document.getElementById('site-topbar');
@@ -194,7 +169,7 @@ function initReveals() {
 
     try {
         document.body.classList.add('motion-ready');
-        document.querySelectorAll('.site-main > section, .site-main > *').forEach((el) => {
+        document.querySelectorAll('.site-main > section:not([data-mela]), .site-main > *:not([data-mela])').forEach((el) => {
             el.dataset.motion ??= 'section';
         });
 
@@ -224,83 +199,7 @@ function initReveals() {
 }
 
 function initHero() {
-    const hero = document.querySelector('[data-hero]');
-    if (!hero) return;
-
-    // --- WebGL morph slider as the hero background ---
-    const stage = hero.querySelector('[data-morph]');
-    if (stage) {
-        let images = [];
-        try { images = JSON.parse(stage.dataset.morph || '[]'); } catch (e) { images = []; }
-        if (images.length) {
-            const slider = createMorphSlider(stage, {
-                images,
-                transition: stage.dataset.transition || 'melt',
-                duration: 1.25,
-                intensity: 0.55,
-                scale: 2.4,
-                aberration: 0.35,
-                drift: 0.4,
-                overlayColor: '#042a2b',
-                autoplay: true,
-                autoplayDelay: 5,
-                loop: true,
-            });
-            if (slider) {
-                onTeardown(() => slider.destroy());
-
-                const counter = hero.querySelector('[data-hero-counter]');
-                const dots = Array.from(hero.querySelectorAll('[data-hero-dot]'));
-                const pad = (n) => String(n).padStart(2, '0');
-                slider.onChange((i, total) => {
-                    if (counter) counter.textContent = `${pad(i + 1)} / ${pad(total)}`;
-                    dots.forEach((d, di) => d.classList.toggle('is-active', di === i));
-                });
-                dots.forEach((d, di) => d.addEventListener('click', () => slider.goTo(di)));
-                hero.querySelector('[data-hero-next]')?.addEventListener('click', () => slider.next());
-                hero.querySelector('[data-hero-prev]')?.addEventListener('click', () => slider.prev());
-
-                // drag / swipe
-                let sx = null;
-                stage.addEventListener('pointerdown', (e) => { sx = e.clientX; });
-                stage.addEventListener('pointerup', (e) => {
-                    if (sx === null) return;
-                    const dx = e.clientX - sx;
-                    if (Math.abs(dx) > 60) (dx < 0 ? slider.next() : slider.prev());
-                    sx = null;
-                });
-            }
-        }
-    }
-
-    // --- scroll choreography ---
-    if (reducedMotion || typeof scroll !== 'function' || typeof animate !== 'function') return;
-    try {
-        const article = hero.querySelector('[data-hero-article]');
-        if (article) {
-            scroll(
-                animate(article, {
-                    transform: ['translateY(0) scale(1)', 'translateY(18vh) scale(.94)'],
-                    opacity: [1, 0],
-                }, { easing: 'linear' }),
-                { target: hero, offset: ['start start', 'end start'] }
-            );
-        }
-        // Centre image descends with a 3D tilt, Revolut-style.
-        const figure = document.querySelector('[data-feature-figure]');
-        if (figure) {
-            scroll(
-                animate(figure, {
-                    transform: [
-                        'perspective(1200px) translate3d(0, 0, 0) rotateX(0deg) scale(1)',
-                        'perspective(1200px) translate3d(0, 46vh, -200px) rotateX(22deg) scale(.58)',
-                    ],
-                    opacity: [1, 1, 0],
-                }, { easing: 'linear' }),
-                { target: hero, offset: ['start start', 'end start'] }
-            );
-        }
-    } catch (e) { /* scroll-linked motion unsupported */ }
+    initMela({ onTeardown, reducedMotion });
 }
 
 function initProductGalleries() {
@@ -583,13 +482,28 @@ function initShopFilters() {
 function initTrendingRail() {
     const rail = document.querySelector('[data-trend-rail]');
     if (!rail) return;
-    const step = () => Math.min(rail.clientWidth * 0.86, 360);
-    document.querySelector('[data-trend-prev]')?.addEventListener('click', () => {
-        rail.scrollBy({ left: -step(), behavior: 'smooth' });
-    });
-    document.querySelector('[data-trend-next]')?.addEventListener('click', () => {
-        rail.scrollBy({ left: step(), behavior: 'smooth' });
-    });
+    const nav = document.querySelector('.trend-nav');
+    const prev = document.querySelector('[data-trend-prev]');
+    const next = document.querySelector('[data-trend-next]');
+
+    // One card (plus the gap) per click, so cards always land fully in view.
+    const step = () => {
+        const card = rail.querySelector('.trend-card');
+        const gap = parseFloat(getComputedStyle(rail).columnGap) || 20;
+        return card ? card.getBoundingClientRect().width + gap : rail.clientWidth * 0.8;
+    };
+    const update = () => {
+        const max = rail.scrollWidth - rail.clientWidth;
+        nav?.classList.toggle('is-hidden', max <= 2);
+        if (prev) prev.disabled = rail.scrollLeft <= 2;
+        if (next) next.disabled = rail.scrollLeft >= max - 2;
+    };
+    prev?.addEventListener('click', () => rail.scrollBy({ left: -step(), behavior: 'smooth' }));
+    next?.addEventListener('click', () => rail.scrollBy({ left: step(), behavior: 'smooth' }));
+    rail.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    onTeardown(() => window.removeEventListener('resize', update));
+    update();
 }
 
 function initPage() {

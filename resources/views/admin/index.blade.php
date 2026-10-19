@@ -7,6 +7,18 @@
         <a class="button-dark" href="{{ route('admin.products.create') }}">Add a suit</a>
     </div>
 
+    <div class="mt-8 flex flex-wrap items-center justify-between gap-4 border p-5 {{ $isInMaintenance ? 'border-signal-orange bg-signal-orange/5' : 'border-ink/15' }}" data-motion>
+        <div>
+            <p class="mono-label {{ $isInMaintenance ? 'text-signal-orange' : '' }}">{{ $isInMaintenance ? 'Shop closed for maintenance' : 'Shop is open' }}</p>
+            <p class="mt-1 text-xs text-ink/60">{{ $isInMaintenance ? 'Visitors see the maintenance page. You can still browse because you are signed in through the private link.' : 'Closing the shop shows visitors a maintenance page until you open it again.' }}</p>
+        </div>
+        @if($isInMaintenance)
+            <form method="POST" action="{{ route('admin.maintenance.off') }}">@csrf<button class="button-dark">Open the shop</button></form>
+        @else
+            <form method="POST" action="{{ route('admin.maintenance.on') }}" onsubmit="return confirm('Close the shop and show visitors the maintenance page?');">@csrf<button class="button-light">Close for maintenance</button></form>
+        @endif
+    </div>
+
     <div class="mt-10 grid gap-4 md:grid-cols-4">
         <div class="border border-ink/15 p-6" data-motion>
             <p class="mono-label">Collection</p>

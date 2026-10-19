@@ -14,8 +14,8 @@
     <div class="admin-shell">
         <aside class="admin-sidebar">
             <a href="{{ route('admin.index') }}" class="flex items-center gap-3 px-6 py-7">
-                <img src="{{ asset('images/london-threads-tassels-logo.jpg') }}" class="h-9 w-9 rounded-full object-cover" alt="">
-                <span class="flex flex-col"><span class="femme text-[9px] text-white/55">LONDON</span><span class="logo text-lg leading-tight text-white">Studio Admin</span></span>
+                <img src="{{ asset('images/brand/logo-maroon.png') }}" class="h-10 w-auto" alt="London Threads and Tassels">
+                <span class="logo text-lg leading-tight text-ink">Admin</span>
             </a>
             <nav class="mt-4 flex flex-col gap-1 px-3 text-sm">
                 <a href="{{ route('admin.index') }}" class="admin-nav-link {{ request()->routeIs('admin.index') ? 'is-active' : '' }}">Dashboard</a>
@@ -23,7 +23,8 @@
                 <a href="{{ route('admin.categories.index') }}" class="admin-nav-link {{ request()->routeIs('admin.categories*') ? 'is-active' : '' }}">Categories</a>
                 <a href="{{ route('admin.orders') }}" class="admin-nav-link {{ request()->routeIs('admin.orders*') ? 'is-active' : '' }}">Orders</a>
                 <a href="{{ route('admin.customers') }}" class="admin-nav-link {{ request()->routeIs('admin.customers*') ? 'is-active' : '' }}">Customers</a>
-                <a href="{{ route('admin.promotions.index') }}" class="admin-nav-link {{ request()->routeIs('admin.promotions*') ? 'is-active' : '' }}">Promotions</a>
+                <a href="{{ route('admin.hero-slides.index') }}" class="admin-nav-link {{ request()->routeIs('admin.hero-slides*') ? 'is-active' : '' }}">Header images</a>
+                <a href="{{ route('admin.promotions.index') }}" class="admin-nav-link {{ request()->routeIs('admin.promotions*') ? 'is-active' : '' }}">Festival offers</a>
                 <a href="{{ route('admin.campaigns.index') }}" class="admin-nav-link {{ request()->routeIs('admin.campaigns*') ? 'is-active' : '' }}">Campaign spotlight</a>
             </nav>
             <div class="mt-auto px-3 pb-6">

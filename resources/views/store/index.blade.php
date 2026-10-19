@@ -1,89 +1,113 @@
 <x-layouts.store :transparent="true">
 
-    {{-- ============ EDITORIAL HERO: featured article over a running slider ============ --}}
-    <section id="hero" class="editorial-hero" data-hero>
-        <div class="editorial-hero__bg" data-hero-bg>
-            <div class="morph-stage"
-                 data-morph='@json($heroSlides->pluck('image')->values())'
-                 data-transition="melt"></div>
-        </div>
-        <div class="editorial-hero__veil"></div>
+    {{-- ============ OFFER SLIDER + LANDING COLLAGE ============
+         First screen: a full-screen slider of the admin's offer banners
+         (Admin → Header images). Scrolling shrinks the current slide down
+         into the middle of a collage of the collection, which rises up
+         around it. --}}
+    @if($heroScenes->isNotEmpty())
+        <section id="hero" class="mela" data-mela aria-roledescription="carousel" aria-label="Offers and featured looks">
+            <div class="mela__sticky">
+                <div class="mela__bg" aria-hidden="true"></div>
 
-        <div class="editorial-hero__inner" data-hero-article>
-            @php($lead = $heroSlides->first())
-            <article class="feature-article">
-                <div class="feature-article__kicker">
-                    <span class="feature-article__flag">{{ $lead['eyebrow'] ?? 'The Feature' }}</span>
-                </div>
-
-                <h1 class="feature-article__title" data-hero-title>{{ $lead['headline'] ?? 'Tailored for the moment' }}</h1>
-
-                <p class="feature-article__excerpt">{{ $lead['subhead'] ?? 'Hand-embroidered occasion suits, made in small batches in London.' }}</p>
-
-                <div class="feature-article__actions">
-                    <a href="{{ route('shop') }}" class="button-dark button-lg">Read the feature</a>
-                    <a href="#stories" class="button-light button-lg">All stories</a>
-                </div>
-
-                <div class="feature-article__meta">
-                    <span>Words &amp; styling — Akansha</span>
-                    <span>London atelier</span>
-                    <span data-hero-counter>01 / {{ str_pad((string) $heroSlides->count(), 2, '0', STR_PAD_LEFT) }}</span>
-                </div>
-            </article>
-        </div>
-
-        {{-- The classy article image: travels down on scroll and lands among the stories --}}
-        {{-- Breakout figure: the model stands out of her frame, card UI in front --}}
-        @php($feature = $campaign?->product ?? ($lead['product'] ?? null))
-        @php($featureImg = $campaign?->photo ?? ($feature?->photo) ?? ($lead['image'] ?? null))
-        @if(true)
-            <figure class="feature-figure">
-              <div class="feature-figure__inner" data-feature-figure>
-                <div class="breakout__frame">
-                    <figcaption class="breakout__meta">
-                        <span class="breakout__plate">
-                            <span class="breakout__label">{{ $feature?->name ?? 'The Feature' }}</span>
-                            <span class="breakout__value">
-                                @if($feature)
-                                    £{{ number_format($feature->effective_price, 0) }}
-                                @else
-                                    {{ now()->format('M Y') }}
-                                @endif
-                            </span>
-                        </span>
-                        <a class="breakout__pill" href="{{ $feature ? route('products.show', $feature) : route('shop') }}">
-                            {{ $feature ? 'Shop this suit' : 'Shop the edit' }}
+                {{-- the collage the slide lands in (Revolut-style) --}}
+                <div class="mela__collage" data-mela-collage>
+                    @foreach($galleryScenes as $scene)
+                        <a href="{{ $scene['link'] ?? route('shop') }}" class="mela__tile" data-mela-tile tabindex="-1" aria-label="{{ $scene['headline'] ?: 'Shop this look' }}">
+                            <img src="{{ $scene['image'] }}" alt="" loading="lazy">
                         </a>
-                    </figcaption>
+                    @endforeach
                 </div>
 
-                <div class="breakout__badges">
-                    <div class="breakout__badge">Hand-embroidered<span>Small batch</span></div>
-                    <div class="breakout__badge">Free UK delivery<span>14-day returns</span></div>
+                <div class="mela__lander" data-mela-lander aria-hidden="true">
+                    <img src="{{ $heroScenes->first()['image'] }}" alt="" data-mela-lander-img>
                 </div>
-              </div>
-            </figure>
-        @endif
 
-        <div class="scroll-cue"><span>Scroll</span><span class="scroll-cue__line"></span></div>
+                <div class="mela__headline" data-mela-headline>
+                    <h2 class="mela__headline-title">The festive edit is open</h2>
+                    <div class="mela__headline-actions">
+                        <a href="{{ route('shop') }}" class="button-zari">Shop the collection</a>
+                        <a href="#collection" class="button-ghost-dark">See the suits</a>
+                    </div>
+                </div>
 
-        @if($heroSlides->count() > 1)
-            <div class="hero-nav">
-                <button type="button" class="hero-ctrl" data-hero-prev aria-label="Previous">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
-                </button>
-                <button type="button" class="hero-ctrl" data-hero-next aria-label="Next">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
-                </button>
+                {{-- the offer slider --}}
+                <div class="mela__slider" data-mela-slider>
+                    @foreach($heroScenes as $i => $scene)
+                        @php($offer = trim((string) ($scene['discount'] ?? '')))
+                        @php(preg_match('/(\d+\s?%)/', $offer, $offerMatch))
+                        @php($offerBig = $offerMatch[1] ?? null)
+                        @php($offerRest = $offerBig ? trim(str_replace($offerBig, '', $offer)) : null)
+                        <div class="mela__slide {{ $i === 0 ? 'is-active' : '' }}" data-mela-slide data-image="{{ $scene['image'] }}" role="group" aria-roledescription="slide" aria-label="{{ $i + 1 }} of {{ $heroScenes->count() }}" @if($i !== 0) aria-hidden="true" @endif>
+                            <img class="mela__slide-img" src="{{ $scene['image'] }}" alt="{{ $scene['headline'] ?: 'Occasion suit from London Threads & Tassels' }}" @if($i === 0) fetchpriority="high" @else loading="lazy" @endif>
+                            <div class="mela__slide-veil" aria-hidden="true"></div>
+                            <div class="mela__caption">
+                                @if($offer !== '')
+                                    <span class="mela__offer-pill">{{ $offer }}</span>
+                                @endif
+                                @if(filled($scene['kicker'] ?? null))
+                                    <p class="mela__kicker">{{ $scene['kicker'] }}</p>
+                                @endif
+                                @if($i === 0)
+                                    <h1 class="mela__title">{{ $scene['headline'] ?: 'Dressed for every celebration' }}</h1>
+                                @else
+                                    <p class="mela__title">{{ $scene['headline'] ?: 'Dressed for every celebration' }}</p>
+                                @endif
+                                @if(filled($scene['subhead']))
+                                    <p class="mela__sub">{{ $scene['subhead'] }}</p>
+                                @endif
+                                <div class="mela__caption-actions">
+                                    <a href="{{ $scene['cta_url'] }}" class="button-zari" @if($i !== 0) tabindex="-1" @endif>{{ $scene['cta_label'] }}</a>
+                                    @if($scene['product'])
+                                        <span class="mela__price">{{ $scene['product']->name }} &mdash; &pound;{{ number_format((float) $scene['product']->effective_price, 0) }}</span>
+                                    @endif
+                                </div>
+                            </div>
+                            @if($offer !== '')
+                                <div class="mela__seal" aria-label="Offer: {{ $offer }}">
+                                    <svg class="mela__seal-ring" viewBox="0 0 200 200" aria-hidden="true">
+                                        <defs><path id="seal-path-{{ $i }}" d="M100,100 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0"/></defs>
+                                        <text><textPath href="#seal-path-{{ $i }}">festive offer &#10022; limited time &#10022; festive offer &#10022; limited time &#10022;</textPath></text>
+                                    </svg>
+                                    <span class="mela__seal-face">
+                                        @if($offerBig)
+                                            <b>{{ $offerBig }}</b>
+                                            @if($offerRest !== '')<small>{{ $offerRest }}</small>@endif
+                                        @else
+                                            <b class="is-text">{{ $offer }}</b>
+                                        @endif
+                                    </span>
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+
+                    @if($heroScenes->count() > 1)
+                        <div class="mela__controls">
+                            <div class="mela__tabs" role="tablist" aria-label="Choose offer">
+                                @foreach($heroScenes as $i => $scene)
+                                    <button type="button" class="mela__tab {{ $i === 0 ? 'is-active' : '' }}" data-mela-dot role="tab" aria-selected="{{ $i === 0 ? 'true' : 'false' }}" aria-label="Show slide {{ $i + 1 }}">
+                                        <span class="mela__tab-label">{{ \Illuminate\Support\Str::limit($scene['headline'] ?: 'Slide '.($i + 1), 26) }}@if(filled($scene['discount'] ?? null)) <em>{{ $scene['discount'] }}</em>@endif</span>
+                                        <i></i>
+                                    </button>
+                                @endforeach
+                            </div>
+                            <div class="mela__arrows">
+                                <button type="button" class="mela__arrow" data-mela-prev aria-label="Previous slide">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+                                </button>
+                                <button type="button" class="mela__arrow" data-mela-next aria-label="Next slide">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
+                <div class="mela__progress" aria-hidden="true"><i></i></div>
             </div>
-            <div class="hero-dots">
-                @foreach($heroSlides as $i => $slide)
-                    <button type="button" class="hero-dot {{ $i === 0 ? 'is-active' : '' }}" data-hero-dot aria-label="Go to slide {{ $i + 1 }}"></button>
-                @endforeach
-            </div>
-        @endif
-    </section>
+        </section>
+    @endif
 
     {{-- ============ STORIES: the articles that rise as the feature scrolls away ============ --}}
     <div id="reveal-cover" class="reveal-cover bg-warm-parchment">

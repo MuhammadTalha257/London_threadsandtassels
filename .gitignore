@@ -30,3 +30,11 @@ Thumbs.db
 .env.*
 !.env.example
 /Claude outputs/
+
+# deployment copies and archives — never commit these
+/deploy_v2/
+/deploy_infinityfree/
+*.zip
+/upload_to_infinityfree/
+# contains the APP_KEY secret
+app.yaml
